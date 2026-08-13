@@ -1,10 +1,6 @@
 name: Build Android APK
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push]
 
 jobs:
   build:
@@ -22,12 +18,14 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+        working-directory: shoptrack_clean   # 👈 adjust to your folder name
 
       - name: Build APK (debug)
         run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
+        working-directory: shoptrack_clean   # 👈 same here
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: shoptrack_clean/build/app/outputs/flutter-apk/app-debug.apk   # 👈 update path
