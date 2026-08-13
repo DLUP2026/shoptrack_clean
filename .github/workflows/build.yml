@@ -1,4 +1,4 @@
-name: Debug folder structure
+name: Build Android APK
 
 on: [push]
 
@@ -14,12 +14,23 @@ jobs:
         run: |
           echo "Current directory:"
           pwd
-          echo ""
-          echo "Files and folders at root:"
+          echo "Files and folders:"
           ls -la
-          echo ""
-          echo "If there is a subfolder, let's see inside it (if any):"
-          for dir in */; do
-            echo "--- Inside $dir ---"
-            ls -la "$dir"
-          done
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.6'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: build/app/outputs/flutter-apk/app-debug.apk
