@@ -10,28 +10,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Debug folder structure
-        run: |
-          echo "Current directory:"
-          pwd
-          echo ""
-          echo "Files and folders:"
-          ls -la
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.44.6'
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get -C shoptrack_clean
-
-      - name: Build APK (debug)
-        run: flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation -C shoptrack_clean
+      - name: Find project root and build
+        run: |
+          # Print current directory and list files for debugging
+          echo "Current directory: $(pwd)"
+          echo "Files:"
+          ls -la
+          
+          # Find the directory that contains pubspec.yaml
+          PROJECT_DIR=$(find . -name "pubspec.yaml" -printf "%h\n" | head -1)
+          
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "❌ pubspec.yaml not found!"
+            exit 1
+          fi
+          
+          echo "✅ Found pubspec.yaml in: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          echo "Changed to: $(pwd)"
+          
+          # Now run Flutter commands from the correct directory
+          flutter pub get
+          flutter build apk --debug --no-tree-shake-icons --android-skip-build-dependency-validation
+        shell: bash
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: shoptrack_clean/build/app/outputs/flutter-apk/app-debug.apk
+          # Wildcard path – finds the APK wherever it is
+          path: **/build/app/outputs/flutter-apk/app-debug.apk
